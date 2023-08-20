@@ -17,7 +17,7 @@ contract inspector{
         uint256 reportid;
     }      
 
-    mapping (address=>report) public reports;
+    mapping (address=>report[]) public reports;
 
     constructor(address _inspector){
         inspector=_inspector;
@@ -28,10 +28,14 @@ contract inspector{
         require(grade>=7,"package rejected due to poor quality");
         emit qualitychecked(_packageid,grade);
         //generate report 
-        reports[msg.sender]=report(_packageid,grade,block.timestamp,block.number);
+        reports[msg.sender].push(report(_packageid,grade,block.timestamp,reports[msg.sender].length+1));
+
+       
     }
 
-    function getreport(address _inspector) public view returns(uint256,uint256,uint256,uint256){
-        return (reports[_inspector].packageid,reports[_inspector].grade,reports[_inspector].timestamp,reports[_inspector].reportid);
+    function getreport (address _inspector,uint256 _reportid) public view returns(uint256,uint256,uint256,uint256){
+        return (reports[_inspector][_reportid-1].packageid,reports[_inspector][_reportid-1].grade,reports[_inspector][_reportid-1].timestamp,reports[_inspector][_reportid-1].reportid);
     }
+
+    
 }
