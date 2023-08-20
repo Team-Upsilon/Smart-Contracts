@@ -38,6 +38,13 @@ contract Transporter {
 
     function recordDelivery(uint256 _packageId, address _inspectorId) external {
         require(supplierContract.rawMaterialPackages(_packageId).transporterId == address(this), "Transporter not authorized for this package");
+        
+
+        // checking if package is poor quality or not , need to write test doubtful
+        require(inspectorContract.reports(_inspectorId).length > 0, "Inspector has not submitted a report");
+        uint256 latestReportIndex = inspectorContract.reports(_inspectorId).length - 1;
+        require(inspectorContract.reports(_inspectorId)[latestReportIndex].isinspected, "Package is droped due to poor quality");
+        
         deliveryCount++;
         deliveries[deliveryCount] = Delivery(
             _packageId,
