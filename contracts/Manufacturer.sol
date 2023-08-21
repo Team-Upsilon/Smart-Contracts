@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./Supplier.sol";
+import "./BatchScheduler.sol";
 
 contract Manufacturer {
-    Supplier private supplierContract;
+    BatchScheduler private batchSchedulerContract;
 
-    constructor(address _supplierAddress) {
-        supplierContract = Supplier(_supplierAddress);
+    constructor(address _batchSchedulerAddress) {
+        batchSchedulerContract = BatchScheduler(_batchSchedulerAddress);
     }
 
     struct Medicine {
@@ -24,11 +24,12 @@ contract Manufacturer {
         address manufacturerId;
         uint256 manufacturingDate;
         Stages stage; // Add stage field
-        // uint256 score;
+        uint256 score;
 
     }
 
     enum Stages {
+        preProduction,
         Stage1,
         Stage2,
         Packaging
@@ -54,7 +55,9 @@ contract Manufacturer {
 
     function createBatch(
         uint256[] memory _medicineIds,
-        uint256[] memory _medicineQuantities
+        uint256[] memory _medicineQuantities,
+        uint256 estimatedCost,
+        uint256 productionRatePerDay
     ) external {
         require(
             _medicineIds.length == _medicineQuantities.length,
@@ -85,13 +88,16 @@ contract Manufacturer {
             medicines[medicineId].totalQuantity += medicineQuantity;
         }
 
+        uint256 calculatedScore = batchSchedulerContract.calculateScore(productionRatePerDay,estimatedCost,actualQuantities);
+
         batches[currentBatchId] = Batch(
             currentBatchId,
             actualMedicineIds,
             actualQuantities,
             msg.sender,
             block.timestamp,
-            Stages.Stage1 // Set the stage to Stage 1 initially
+            Stages.preProduction,
+            calculatedScore
         );
 
         emit BatchCreated(
@@ -100,7 +106,7 @@ contract Manufacturer {
             actualQuantities,
             msg.sender,
             block.timestamp,
-            Stages.Stage1
+            Stages.preProduction
         );
     }
 
@@ -122,8 +128,14 @@ contract Manufacturer {
     function updateBatchStage(uint256 _batchId, uint256 _newStage) external {
         Batch storage batch = batches[_batchId];
         require(batch.batchId != 0, "Batch not found");
+        if(_newStage == 1) {
 
-        if (_newStage == 2) {
+            require(batch.stage == Stages.preProduction, "Invalid stage transition");
+            batch.stage = Stages.Stage1;
+
+            emit BatchStageUpdated(_batchId, Stages.Stage1);
+        }
+        else if (_newStage == 2) {
 
             require(batch.stage == Stages.Stage1, "Invalid stage transition");
             batch.stage = Stages.Stage2;
