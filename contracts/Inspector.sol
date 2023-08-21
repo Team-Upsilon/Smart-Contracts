@@ -26,14 +26,18 @@ contract Inspector {
     function checkquality(
         uint256 _packageid,
         string memory _description,
-        uint256 a,
-        uint256 b,
-        uint256 c,
-        uint256 qa,
-        uint256 qb,
-        uint256 qc
+        uint256[] memory _quantity,
+        uint256[] memory concentration
     ) public {
-        uint256 grade = ((a * qa) + (b * qb) + (c * qc)) / (qa + qb + qc);
+        uint256 grade = 0;
+        uint256 totalquantity = 0;
+        for (uint256 i = 0; i < _quantity.length; i++) {
+            if (_quantity[i] > 0) {
+                grade += _quantity[i] * concentration[i];
+                totalquantity += _quantity[i];
+            }
+        }
+        grade = grade / totalquantity;
         emit packagegrade(_packageid, grade);
 
         //generate report
