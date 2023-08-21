@@ -21,7 +21,7 @@ contract Inspector {
     }
     
     // packageid to report
-    mapping(address => report[]) public reports;
+    mapping(uint256 => report[]) public reports;
 
     function checkquality(
         uint256 _packageid,
@@ -36,7 +36,6 @@ contract Inspector {
         uint256 grade = ((a * qa) + (b * qb) + (c * qc)) / (qa + qb + qc);
         emit packagegrade(_packageid, grade);
 
-        reportCount++;
         //generate report
         if (grade >= 7) {
             reports[_packageid].push(

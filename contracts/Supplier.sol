@@ -34,7 +34,6 @@ contract Supplier {
         string description,
         address indexed manufacturerId,
         address indexed transporterId,
-        address indexed supplierId,
         address indexed inspectorId
     );
 
@@ -62,7 +61,6 @@ contract Supplier {
             _description,
             _manufacturerId,
             _transporterId,
-            msg.sender,
             _inspectorId
         );
     }
