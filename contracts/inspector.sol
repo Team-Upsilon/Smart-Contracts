@@ -1,6 +1,17 @@
 pragma solidity ^0.8.0;
 
+import "./Supplier.sol";
+
 contract inspector {
+
+    Transporter private transporterContract;
+
+    constructor(
+        address _transporterAddress
+    ) {
+        transporterContract = Supplier(_transporterAddress);
+    }
+
     event qualitychecked(uint256 packageid, uint256 grade);
     event packagegrade(uint256 packageid, uint256 grade);
 
@@ -31,7 +42,6 @@ contract inspector {
         emit packagegrade(_packageid, grade);
 
         reportCount++;
-
         //generate report
         if (grade >= 7) {
             reports[msg.sender].push(
