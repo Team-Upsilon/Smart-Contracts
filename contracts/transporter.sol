@@ -2,11 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "./Supplier.sol";
-import "./Inspector.sol";
 
 contract Transporter {
     Supplier private supplierContract;
-    Inspector private inspectorContract;
 
     constructor(
         address _inventoryAddress,
@@ -14,57 +12,47 @@ contract Transporter {
         address _inspectorAddress
     ) {
         supplierContract = Supplier(_supplierAddress);
-        inspectorContract = Inspector(_inspectorAddress);
     }
 
     struct Delivery {
-        uint256 deliveryId;
         uint256 packageId;
         address supplierId;
         address transporterId;
-        address inspectorId;
         uint256 deliveryTimestamp;
-        bool isInspected;
     }
-
-    uint256 public deliveryCount;
+    
+    // packageId to Delivery struct
     mapping(uint256 => Delivery) public deliveries;
 
     event DeliveryRecorded(
-        uint256 deliveryId,
         uint256 packageId,
         address supplierId,
         address transporterId,
-        address inspectorId,
         uint256 deliveryTimestamp
     );
 
-    function recordDelivery(uint256 _packageId, address _inspectorId) external {
+    function recordDelivery(uint256 _packageId) external {
         require(
             supplierContract.rawMaterialPackages(_packageId).transporterId ==
                 address(this),
             "Transporter not authorized for this package"
         );
 
-        deliveryCount++;
-        deliveries[deliveryCount] = Delivery(
-            deliveryCount,
+        deliveries[_packageId] = Delivery(
             _packageId,
             supplierContract.rawMaterialPackages(_packageId).supplierId,
             msg.sender,
-            _inspectorId,
-            block.timestamp,
-            false
+            block.timestamp
         );
 
+        // Update the package stage to "Delivered" in Supplier contract
+        supplierContract.updatePackageStage(_packageId, 2);
+
         emit DeliveryRecorded(
-            deliveryCount,
             _packageId,
             supplierContract.rawMaterialPackages(_packageId).supplierId,
             msg.sender,
-            _inspectorId,
-            block.timestamp,
-            false
+            block.timestamp
         );
     }
 }
