@@ -2,30 +2,26 @@ pragma solidity ^0.8.0;
 
 import "./Supplier.sol";
 
-contract inspector {
+contract Inspector {
+    Supplier private supplierContract;
 
-    Transporter private transporterContract;
-
-    constructor(
-        address _transporterAddress
-    ) {
-        transporterContract = Supplier(_transporterAddress);
+    constructor(address _supplierAddress) {
+        supplierContract = Supplier(_supplierAddress);
     }
 
     event qualitychecked(uint256 packageid, uint256 grade);
     event packagegrade(uint256 packageid, uint256 grade);
 
     struct report {
-        uint256 reportid;
-        string description;
         uint256 packageid;
+        string description;
         uint256 grade;
         uint256 timestamp;
         address inspectorId;
         bool isApproved;
     }
-
-    uint256 public reportCount;
+    
+    // packageid to report
     mapping(address => report[]) public reports;
 
     function checkquality(
@@ -44,11 +40,10 @@ contract inspector {
         reportCount++;
         //generate report
         if (grade >= 7) {
-            reports[msg.sender].push(
+            reports[_packageid].push(
                 report(
-                    reportCount,
-                    _description,
                     _packageid,
+                    _description,
                     grade,
                     block.timestamp,
                     msg.sender,
@@ -56,11 +51,10 @@ contract inspector {
                 )
             );
         } else {
-            reports[msg.sender].push(
+            reports[_packageid].push(
                 report(
-                    reportCount,
-                    _description,
                     _packageid,
+                    _description,
                     grade,
                     block.timestamp,
                     msg.sender,
@@ -68,5 +62,8 @@ contract inspector {
                 )
             );
         }
+
+        // Update the package stage in Supplier contract
+        supplierContract.updatePackageStage(_packageid, 3);
     }
 }

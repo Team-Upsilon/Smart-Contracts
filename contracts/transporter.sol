@@ -7,9 +7,7 @@ contract Transporter {
     Supplier private supplierContract;
 
     constructor(
-        address _inventoryAddress,
-        address _supplierAddress,
-        address _inspectorAddress
+        address _supplierAddress
     ) {
         supplierContract = Supplier(_supplierAddress);
     }
