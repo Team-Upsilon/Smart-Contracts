@@ -22,6 +22,7 @@ contract Supplier {
         address manufacturerId;
         address transporterId;
         address supplierId;
+        address inspectorId;
         Stages stage;
     }
 
@@ -33,7 +34,8 @@ contract Supplier {
         string description,
         address indexed manufacturerId,
         address indexed transporterId,
-        address indexed supplierId
+        address indexed supplierId,
+        address indexed inspectorId
     );
 
     event RawMaterialPackageStageUpdated(uint256 packageId, uint256 newStage);
@@ -41,7 +43,8 @@ contract Supplier {
     function createRawMaterialPackage(
         string memory _description,
         address _manufacturerId,
-        address _transporterId
+        address _transporterId,
+        address _inspectorId
     ) external {
         packageCount++;
         rawMaterialPackages[packageCount] = RawMaterialPackage(
@@ -50,6 +53,7 @@ contract Supplier {
             _manufacturerId,
             _transporterId,
             msg.sender,
+            _inspectorId,
             Stages.Created
         );
 
@@ -58,7 +62,8 @@ contract Supplier {
             _description,
             _manufacturerId,
             _transporterId,
-            msg.sender
+            msg.sender,
+            _inspectorId
         );
     }
 
