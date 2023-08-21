@@ -9,7 +9,6 @@ contract Inspector {
         supplierContract = Supplier(_supplierAddress);
     }
 
-    event qualitychecked(uint256 packageid, uint256 grade);
     event packagegrade(uint256 packageid, uint256 grade);
 
     struct report {
