@@ -24,6 +24,8 @@ contract Manufacturer {
         address manufacturerId;
         uint256 manufacturingDate;
         Stages stage; // Add stage field
+        // uint256 score;
+
     }
 
     enum Stages {
@@ -34,6 +36,7 @@ contract Manufacturer {
 
     uint256 public batchCount;
     mapping(uint256 => Batch) public batches;
+
     uint256 public medicineCount;
     mapping(uint256 => Medicine) public medicines;
 
@@ -66,6 +69,7 @@ contract Manufacturer {
         uint256[] memory actualQuantities = new uint256[](totalMedicines);
 
         for (uint256 i = 0; i < totalMedicines; i++) {
+
             uint256 medicineId = _medicineIds[i];
             uint256 medicineQuantity = _medicineQuantities[i];
 
@@ -120,11 +124,13 @@ contract Manufacturer {
         require(batch.batchId != 0, "Batch not found");
 
         if (_newStage == 2) {
+
             require(batch.stage == Stages.Stage1, "Invalid stage transition");
             batch.stage = Stages.Stage2;
 
             emit BatchStageUpdated(_batchId, Stages.Stage2);
         } else if (_newStage == 3) {
+
             require(batch.stage == Stages.Stage2, "Invalid stage transition");
             batch.stage = Stages.Packaging;
 
@@ -132,5 +138,4 @@ contract Manufacturer {
         }
     }
 
-    // Add more functions for manufacturing stages, quality control, etc.
 }
