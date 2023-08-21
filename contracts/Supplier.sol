@@ -10,12 +10,19 @@ contract Supplier {
         inventoryContract = Inventory(_inventoryAddress);
     }
 
+    enum Stages {
+        Created,
+        Delivered,
+        Inspected
+    }
+
     struct RawMaterialPackage {
         uint256 packageId;
         string description;
         address manufacturerId;
         address transporterId;
         address supplierId;
+        Stages stage;
     }
 
     uint256 public packageCount;
@@ -29,6 +36,8 @@ contract Supplier {
         address indexed supplierId
     );
 
+    event RawMaterialPackageStageUpdated(uint256 packageId, uint256 newStage);
+
     function createRawMaterialPackage(
         string memory _description,
         address _manufacturerId,
@@ -40,7 +49,8 @@ contract Supplier {
             _description,
             _manufacturerId,
             _transporterId,
-            msg.sender
+            msg.sender,
+            Stages.Created
         );
 
         emit RawMaterialPackageCreated(
@@ -52,28 +62,25 @@ contract Supplier {
         );
     }
 
-    // function createRawMaterialPackage(
-    //     string memory _name,
-    //     uint256 _quantity
-    // ) external {
-    //     inventoryContract.addRawMaterial(_name, _quantity);
-    // }
+    function updatePackageStage(uint256 _packageId, uint256 _newStage) external {
+        RawMaterialPackage storage package = rawMaterialPackages[_packageId];
+        require(package.packageId != 0, "Package not found");
 
-    // function updateRawMaterialPackage(
-    //     uint256 _materialId,
-    //     string memory _newName,
-    //     uint256 _newQuantity
-    // ) external {
-    //     inventoryContract.updateRawMaterial(
-    //         _materialId,
-    //         _newName,
-    //         _newQuantity
-    //     );
-    // }
+        // Check if the package is currently in the expected previous stage
+        if (_newStage == 2) {
+            require(
+                package.stage == Stages.Created,
+                "Invalid stage transition"
+            );
+             package.stage = Stages.Delivered;
+        } else if (_newStage == 3) {
+            require(
+                package.stage == Stages.Delivered,
+                "Invalid stage transition"
+            );
+            package.stage = Stages.Inspected;
+        }
 
-    // function getInventoryStatus(
-    //     uint256 _materialId
-    // ) external view returns (uint256) {
-    //     return inventoryContract.checkAvailability(_materialId, 0);
-    // }
+        emit RawMaterialPackageStageUpdated(_packageId, _newStage);
+    }
 }
