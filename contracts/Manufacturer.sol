@@ -25,6 +25,9 @@ contract Manufacturer {
         uint256 manufacturingDate;
         Stages stage; 
         uint256 score;
+        uint256[] idealstage1conditions;
+        uint256[] idealstage2conditions;
+        uint256[] idealpackagingconditions;
     }
 
     enum Stages {
@@ -56,7 +59,10 @@ contract Manufacturer {
         uint256[] memory _medicineIds,
         uint256[] memory _medicineQuantities,
         uint256 estimatedCost,
-        uint256 productionRatePerDay
+        uint256 productionRatePerDay,
+        uint256[] memory _idealstage1conditions,
+        uint256[] memory _idealstage2conditions,
+        uint256[] memory _idealpackagingconditions
     ) external {
         require(
             _medicineIds.length == _medicineQuantities.length,
@@ -96,7 +102,10 @@ contract Manufacturer {
             msg.sender,
             block.timestamp,
             Stages.preProduction,
-            calculatedScore
+            calculatedScore,
+            _idealstage1conditions,
+            _idealstage2conditions,
+            _idealpackagingconditions
         );
 
         emit BatchCreated(
@@ -146,6 +155,26 @@ contract Manufacturer {
             batch.stage = Stages.Packaging;
 
             emit BatchStageUpdated(_batchId, Stages.Packaging);
+        }
+    }
+
+    function getBtachId(uint256 _batchId) public view returns (uint256) {
+        return batches[_batchId].batchId;
+    }
+
+    function getIdealStageCondition(uint256 _batchId, uint256 _stage)
+        public
+        view
+        returns (uint256[] memory)
+    {
+        Batch storage batch = batches[_batchId];
+        require(batch.batchId != 0, "Batch not found");
+        if (_stage == 1) {
+            return batch.idealstage1conditions;
+        } else if (_stage == 2) {
+            return batch.idealstage2conditions;
+        } else if (_stage == 3) {
+            return batch.idealpackagingconditions;
         }
     }
 
