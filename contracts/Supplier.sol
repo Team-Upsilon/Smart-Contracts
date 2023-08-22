@@ -19,6 +19,7 @@ contract Supplier {
     struct RawMaterialPackage {
         uint256 packageId;
         string description;
+        string ipfs_hash;  // New field: IPFS hash
         address manufacturerId;
         address transporterId;
         address supplierId;
@@ -32,6 +33,7 @@ contract Supplier {
     event RawMaterialPackageCreated(
         uint256 packageId,
         string description,
+        string ipfs_hash,
         address indexed manufacturerId,
         address indexed transporterId,
         address indexed inspectorId
@@ -41,6 +43,7 @@ contract Supplier {
 
     function createRawMaterialPackage(
         string memory _description,
+        string memory _ipfs_hash,
         address _manufacturerId,
         address _transporterId,
         address _inspectorId
@@ -49,6 +52,7 @@ contract Supplier {
         rawMaterialPackages[packageCount] = RawMaterialPackage(
             packageCount,
             _description,
+            _ipfs_hash,
             _manufacturerId,
             _transporterId,
             msg.sender,
@@ -59,6 +63,7 @@ contract Supplier {
         emit RawMaterialPackageCreated(
             packageCount,
             _description,
+            _ipfs_hash,
             _manufacturerId,
             _transporterId,
             _inspectorId

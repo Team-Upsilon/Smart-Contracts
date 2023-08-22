@@ -3,44 +3,39 @@ pragma solidity ^0.8.0;
 
 import "./Manufacturer.sol";
 
-contract Inspector {
+contract RealTimeMonitoring {
     Manufacturer private manufacturerContract;
 
     constructor(address _manufacturerAddress) {
         manufacturerContract = Manufacturer(_manufacturerAddress);
     }
 
-    struct Inspection {
+    struct batchReport {
         uint256 batchId;
         uint256 stage;
-        uint256 inspectionResult;
+        uint256 batchReportResult;
     }
 
-    uint256 public inspectionCount;
-    mapping(uint256 => Inspection[]) public batchInspections;
+    //batchId to struct
+    mapping(uint256 => batchReport[]) public batchReports;
 
-    // event InspectionRecorded(uint256 batchId, uint256 stage, string inspectionResult);
-    // event InspectionReportGenerated(uint256 batchId, string report);
+    event batchReportRecorded(
+        uint256 batchId,
+        uint256 stage,
+        uint256 batchReportResult
+    );
 
-    modifier onlyManufacturer() {
-        require(
-            msg.sender == address(manufacturerContract),
-            "Only the manufacturer can call this function"
-        );
-        _;
-    }
-
-    function recordinspection(
+    function recordBatchReport(
         uint256 _batchId,
         uint256 stage,
         uint256[] memory stagecondition
-    ) public onlyManufacturer {
-        uint256 batchId = manufacturerContract.getBtachId(_batchId);
+    ) public {
+        uint256 batchId = manufacturerContract.getBatchId(_batchId);
         require(batchId != 0, "Batch not found");
         require(stage >= 1 && stage <= 3, "Invalid stage");
         require(
             stagecondition.length > 0,
-            "Inspection parameters cannot be empty"
+            "batchReport parameters cannot be empty"
         );
         uint256[] memory idealstagecondition = manufacturerContract
             .getIdealStageCondition(_batchId, stage);
@@ -48,7 +43,7 @@ contract Inspector {
             idealstagecondition.length == stagecondition.length,
             "Invalid input"
         );
-       
+
         uint256 totalDeviation = 0;
         for (uint256 i = 0; i < stagecondition.length; i++) {
             uint256 deviation = absDiff(
@@ -57,34 +52,33 @@ contract Inspector {
             );
             totalDeviation += deviation;
         }
+
         uint256 averageDeviation = (totalDeviation * 100) /
             (idealstagecondition.length *
                 getMaxIdealValue(idealstagecondition));
 
-                
         // Calculate the grading based on the average deviation
         uint256 grading = 10 - (averageDeviation / 10);
 
         // Ensure the grading is within the range 1-10
         if (grading < 1) {
-            Inspection memory inspection = Inspection(
-                _batchId,
-                stage,
-                0
-            );
+            grading = 0;
         } else if (grading > 10) {
-            Inspection memory inspection = Inspection(
-                _batchId,
-                stage,
-                10
-            );
-        } else {
-            Inspection memory inspection = Inspection(
-                _batchId,
-                stage,
-                grading
-            );
+            grading = 10;
         }
+
+        // Store the batchReport result in the mapping
+        batchReport memory newBatchReport  = batchReport(_batchId, stage, grading);
+        batchReports[_batchId].push(newBatchReport );
+
+        // Emit the batchReportRecorded event
+        emit batchReportRecorded(_batchId, stage, grading);
+
+        // Update batchReportStage in Manufacturer contract
+        manufacturerContract.updateInspectionStage(
+            _batchId,
+            stage
+        );
     }
 
     function absDiff(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -107,4 +101,3 @@ contract Inspector {
         return max;
     }
 }
-

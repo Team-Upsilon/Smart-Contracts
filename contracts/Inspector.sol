@@ -12,7 +12,7 @@ contract Inspector {
 
     event packagegrade(uint256 packageid, uint256 grade);
 
-    struct report {
+    struct packageReport {
         uint256 packageid;
         string description;
         uint256 grade;
@@ -21,8 +21,8 @@ contract Inspector {
         bool isApproved;
     }
     
-    // packageid to report
-    mapping(uint256 => report[]) public reports;
+    // packageid to packageReport
+    mapping(uint256 => packageReport[]) public packageReports;
 
  function checkquality(
         uint256 _packageid,
@@ -44,10 +44,10 @@ contract Inspector {
 
         
 
-        //generate report
+        //generate packageReport
         if (grade >= 7) {
-            reports[_packageid].push(
-                report(
+            packageReports[_packageid].push(
+                packageReport(
                     _packageid,
                     _description,
                     grade,
@@ -57,8 +57,8 @@ contract Inspector {
                 )
             );
         } else {
-            reports[_packageid].push(
-                report(
+            packageReports[_packageid].push(
+                packageReport(
                     _packageid,
                     _description,
                     grade,

@@ -15,6 +15,7 @@ contract Manufacturer {
         string name;
         string description;
         uint256 totalQuantity;
+        string ipfs_hash; // New field: IPFS hash
     }
 
     struct Batch {
@@ -22,12 +23,15 @@ contract Manufacturer {
         uint256[] medicineIds;
         uint256[] medicineQuantities;
         address manufacturerId;
+        // address wholeSalerId;
         uint256 manufacturingDate;
-        Stages stage; 
+        Stages stage;
         uint256 score;
-        uint256[] idealstage1conditions;
+        uint256[] idealstage1conditions; // [tempreture, pressure, concentration, PH Value]
         uint256[] idealstage2conditions;
         uint256[] idealpackagingconditions;
+          address inspectorId;
+        InspectionStages InspectionStage;
     }
 
     enum Stages {
@@ -35,6 +39,13 @@ contract Manufacturer {
         Stage1,
         Stage2,
         Packaging
+    }
+
+    enum InspectionStages {
+        STAGE_0,
+        STAGE_1,
+        STAGE_2,
+        STAGE_3
     }
 
     uint256 public batchCount;
@@ -52,7 +63,13 @@ contract Manufacturer {
         Stages stage
     );
 
-    event MedicineCreated(uint256 medicineId, string name, string description);
+    event MedicineCreated(
+        uint256 medicineId,
+        string name,
+        string description,
+        string ipfs_hash
+    );
+
     event BatchStageUpdated(uint256 batchId, Stages newStage);
 
     function createBatch(
@@ -62,7 +79,8 @@ contract Manufacturer {
         uint256 productionRatePerDay,
         uint256[] memory _idealstage1conditions,
         uint256[] memory _idealstage2conditions,
-        uint256[] memory _idealpackagingconditions
+        uint256[] memory _idealpackagingconditions,
+        address _inspectorId // New parameter: Inspector's address
     ) external {
         require(
             _medicineIds.length == _medicineQuantities.length,
@@ -77,7 +95,6 @@ contract Manufacturer {
         uint256[] memory actualQuantities = new uint256[](totalMedicines);
 
         for (uint256 i = 0; i < totalMedicines; i++) {
-
             uint256 medicineId = _medicineIds[i];
             uint256 medicineQuantity = _medicineQuantities[i];
 
@@ -93,7 +110,11 @@ contract Manufacturer {
             medicines[medicineId].totalQuantity += medicineQuantity;
         }
 
-        uint256 calculatedScore = batchSchedulerContract.calculateScore(productionRatePerDay,estimatedCost,actualQuantities);
+        uint256 calculatedScore = batchSchedulerContract.calculateScore(
+            productionRatePerDay,
+            estimatedCost,
+            actualQuantities
+        );
 
         batches[currentBatchId] = Batch(
             currentBatchId,
@@ -105,7 +126,9 @@ contract Manufacturer {
             calculatedScore,
             _idealstage1conditions,
             _idealstage2conditions,
-            _idealpackagingconditions
+            _idealpackagingconditions,
+            _inspectorId, // Set the inspectorId field
+            InspectionStages.STAGE_0
         );
 
         emit BatchCreated(
@@ -120,37 +143,38 @@ contract Manufacturer {
 
     function createMedicine(
         string memory _name,
-        string memory _description
+        string memory _description,
+        string memory _ipfs_hash
     ) external {
         medicineCount++;
         medicines[medicineCount] = Medicine(
             medicineCount,
             _name,
             _description,
-            0
+            0,
+            _ipfs_hash
         );
 
-        emit MedicineCreated(medicineCount, _name, _description);
+        emit MedicineCreated(medicineCount, _name, _description, _ipfs_hash);
     }
 
     function updateBatchStage(uint256 _batchId, uint256 _newStage) external {
         Batch storage batch = batches[_batchId];
         require(batch.batchId != 0, "Batch not found");
-        if(_newStage == 1) {
-
-            require(batch.stage == Stages.preProduction, "Invalid stage transition");
+        if (_newStage == 1) {
+            require(
+                batch.stage == Stages.preProduction,
+                "Invalid stage transition"
+            );
             batch.stage = Stages.Stage1;
 
             emit BatchStageUpdated(_batchId, Stages.Stage1);
-        }
-        else if (_newStage == 2) {
-
+        } else if (_newStage == 2) {
             require(batch.stage == Stages.Stage1, "Invalid stage transition");
             batch.stage = Stages.Stage2;
 
             emit BatchStageUpdated(_batchId, Stages.Stage2);
         } else if (_newStage == 3) {
-
             require(batch.stage == Stages.Stage2, "Invalid stage transition");
             batch.stage = Stages.Packaging;
 
@@ -158,15 +182,14 @@ contract Manufacturer {
         }
     }
 
-    function getBtachId(uint256 _batchId) public view returns (uint256) {
+    function getBatchId(uint256 _batchId) public view returns (uint256) {
         return batches[_batchId].batchId;
     }
 
-    function getIdealStageCondition(uint256 _batchId, uint256 _stage)
-        public
-        view
-        returns (uint256[] memory)
-    {
+    function getIdealStageCondition(
+        uint256 _batchId,
+        uint256 _stage
+    ) public view returns (uint256[] memory) {
         Batch storage batch = batches[_batchId];
         require(batch.batchId != 0, "Batch not found");
         if (_stage == 1) {
@@ -178,4 +201,24 @@ contract Manufacturer {
         }
     }
 
+    function updateInspectionStage(
+        uint256 _batchId,
+        uint256 _newStage
+    ) external {
+        Batch storage batch = batches[_batchId];
+        require(batch.batchId != 0, "Batch not found");
+
+        require(_newStage >= 1 && _newStage <= 3, "Invalid stage");
+
+        if (_newStage == 1) {
+            require(batch.stage == Stages.preProduction, "Invalid stage");
+            batch.InspectionStage = InspectionStages.STAGE_1;
+        } else if (_newStage == 2) {
+            require(batch.stage == Stages.Stage1, "Invalid stage");
+            batch.InspectionStage = InspectionStages.STAGE_2;
+        } else if (_newStage == 3) {
+            require(batch.stage == Stages.Stage2, "Invalid stage");
+            batch.InspectionStage = InspectionStages.STAGE_3;
+        }
+    }
 }
