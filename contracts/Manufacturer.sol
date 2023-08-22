@@ -23,9 +23,8 @@ contract Manufacturer {
         uint256[] medicineQuantities;
         address manufacturerId;
         uint256 manufacturingDate;
-        Stages stage; // Add stage field
+        Stages stage; 
         uint256 score;
-
     }
 
     enum Stages {
