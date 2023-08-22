@@ -15,7 +15,7 @@ contract Manufacturer {
         string name;
         string description;
         uint256 totalQuantity;
-        string ipfs_hash; // New field: IPFS hash
+        string ipfs_hash; 
     }
 
     struct Batch {
@@ -23,14 +23,15 @@ contract Manufacturer {
         uint256[] medicineIds;
         uint256[] medicineQuantities;
         address manufacturerId;
-        // address wholeSalerId;
+        address transporterId;
+        address wholesalerId;
         uint256 manufacturingDate;
         Stages stage;
         uint256 score;
         uint256[] idealstage1conditions; // [tempreture, pressure, concentration, PH Value]
         uint256[] idealstage2conditions;
         uint256[] idealpackagingconditions;
-          address inspectorId;
+        address inspectorId;
         InspectionStages InspectionStage;
     }
 
@@ -38,7 +39,8 @@ contract Manufacturer {
         preProduction,
         Stage1,
         Stage2,
-        Packaging
+        Packaging,
+        Delivered
     }
 
     enum InspectionStages {
@@ -80,7 +82,9 @@ contract Manufacturer {
         uint256[] memory _idealstage1conditions,
         uint256[] memory _idealstage2conditions,
         uint256[] memory _idealpackagingconditions,
-        address _inspectorId // New parameter: Inspector's address
+        address _inspectorId,
+        address _transporterId,
+        address _wholesalerId
     ) external {
         require(
             _medicineIds.length == _medicineQuantities.length,
@@ -121,13 +125,15 @@ contract Manufacturer {
             actualMedicineIds,
             actualQuantities,
             msg.sender,
+            _transporterId,
+            _wholesalerId,
             block.timestamp,
             Stages.preProduction,
             calculatedScore,
             _idealstage1conditions,
             _idealstage2conditions,
             _idealpackagingconditions,
-            _inspectorId, // Set the inspectorId field
+            _inspectorId,
             InspectionStages.STAGE_0
         );
 
@@ -180,10 +186,20 @@ contract Manufacturer {
 
             emit BatchStageUpdated(_batchId, Stages.Packaging);
         }
+        else if (_newStage == 4) {
+            require(batch.stage == Stages.Packaging, "Invalid stage transition");
+            batch.stage = Stages.Delivered;
+
+            emit BatchStageUpdated(_batchId, Stages.Delivered);
+        }
     }
 
     function getBatchId(uint256 _batchId) public view returns (uint256) {
         return batches[_batchId].batchId;
+    }
+
+     function getBatches(uint256 _batchId) public view returns (Batch memory) {
+        return batches[_batchId];
     }
 
     function getIdealStageCondition(

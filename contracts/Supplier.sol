@@ -19,7 +19,7 @@ contract Supplier {
     struct RawMaterialPackage {
         uint256 packageId;
         string description;
-        string ipfs_hash;  // New field: IPFS hash
+        string ipfs_hash; // New field: IPFS hash
         address manufacturerId;
         address transporterId;
         address supplierId;
@@ -70,7 +70,10 @@ contract Supplier {
         );
     }
 
-    function updatePackageStage(uint256 _packageId, uint256 _newStage) external {
+    function updatePackageStage(
+        uint256 _packageId,
+        uint256 _newStage
+    ) external {
         RawMaterialPackage storage package = rawMaterialPackages[_packageId];
         require(package.packageId != 0, "Package not found");
 
@@ -80,7 +83,7 @@ contract Supplier {
                 package.stage == Stages.Created,
                 "Invalid stage transition"
             );
-             package.stage = Stages.Delivered;
+            package.stage = Stages.Delivered;
         } else if (_newStage == 3) {
             require(
                 package.stage == Stages.Delivered,
@@ -90,5 +93,11 @@ contract Supplier {
         }
 
         emit RawMaterialPackageStageUpdated(_packageId, _newStage);
+    }
+
+    function getRawMaterialPackage(
+        uint256 _packageId
+    ) public view returns (RawMaterialPackage memory) {
+        return rawMaterialPackages[_packageId];
     }
 }
