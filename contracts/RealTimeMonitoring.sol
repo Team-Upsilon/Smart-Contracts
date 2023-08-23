@@ -7,9 +7,9 @@ import "./Admin.sol";
 contract RealTimeMonitoring {
     Manufacturer private manufacturerContract;
     Admin private adminContract;
-    constructor(address _manufacturerAddress) {
+    constructor(address _manufacturerAddress, address _adminAddress) {
         manufacturerContract = Manufacturer(_manufacturerAddress);
-        adminContract = Admin(msg.sender);
+        adminContract = Admin(_adminAddress);
     }
 
     struct batchReport {

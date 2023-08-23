@@ -7,9 +7,9 @@ contract Supplier {
     Inventory private inventoryContract;
     Admin private adminContract;
 
-    constructor(address _inventoryAddress) {
+    constructor(address _inventoryAddress, address _adminAddress) {
         inventoryContract = Inventory(_inventoryAddress);
-        adminContract = Admin(msg.sender);
+        adminContract = Admin(_adminAddress);
     }
 
     modifier onlyAdminorOnlySupplier() {

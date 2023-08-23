@@ -8,9 +8,9 @@ contract Manufacturer {
     BatchScheduler private batchSchedulerContract;
     Admin private adminContract;
 
-    constructor(address _batchSchedulerAddress) {
+    constructor(address _batchSchedulerAddress, address _adminAddress) {
         batchSchedulerContract = BatchScheduler(_batchSchedulerAddress);
-        adminContract = Admin(msg.sender);
+        adminContract = Admin(_adminAddress);
     }
 
 
