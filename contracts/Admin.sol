@@ -7,6 +7,7 @@ contract Admin {
     mapping(address => bool) public inspectors;
     mapping(address => bool) public suppliers;
     mapping(address => bool) public transporters;
+    mapping(address => bool) public wholesalers;
 
     constructor() {
         admin = msg.sender;
@@ -15,6 +16,16 @@ contract Admin {
     modifier onlyAdmin() {
         require(admin == msg.sender, "Only admin can call this function");
         _;
+    }
+
+    function addWholesaler(address _account) external onlyAdmin {
+        require(!wholesalers[_account], "wholesaler already exists");
+        wholesalers[_account] = true;
+    }
+
+    function removeWholesaler(address _account) external onlyAdmin {
+        require(wholesalers[_account], "wholesaler does not exist");
+        wholesalers[_account] = false;
     }
 
     function addManufacturer(address _account) external onlyAdmin {
@@ -60,6 +71,4 @@ contract Admin {
     function updateAdmin(address _newAdmin) external onlyAdmin {
         admin = _newAdmin;
     }
-
-    
 }

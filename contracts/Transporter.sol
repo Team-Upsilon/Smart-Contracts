@@ -10,17 +10,11 @@ contract Transporter {
     Manufacturer private manufacturerContract;
     Admin private adminContract;
 
-    
-
-    
-    
-
     constructor(address _supplierAddress, address _manufacturerAddress, address _adminAddress) {
         supplierContract = Supplier(_supplierAddress);
         manufacturerContract = Manufacturer(_manufacturerAddress);
         adminContract = Admin(_adminAddress);
     }
-
 
     modifier onlyAdminorOnlyTransporter() {
         require(
@@ -45,8 +39,6 @@ contract Transporter {
         address transporterId;
         uint256 deliveryTimestamp;
     }
-
-   
 
     mapping(uint256 => PackageDelivery) public packageDeliveries;
 

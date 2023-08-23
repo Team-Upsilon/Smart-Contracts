@@ -81,7 +81,7 @@ contract Manufacturer {
         uint256 batchId,
         uint256[] medicineIds,
         uint256[] medicineQuantities,
-        address indexed manufacturerId,
+        address manufacturerId,
         uint256 manufacturingDate,
         Stages stage
     );
