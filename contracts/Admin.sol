@@ -13,27 +13,7 @@ contract Admin {
     }
 
     modifier onlyAdmin() {
-        require(msg.sender == admin, "Only admin can call this function");
-        _;
-    }
-
-    modifier onlyManufacturer() {
-        require(manufacturers[msg.sender], "Only manufacturers can call this function");
-        _;
-    }
-
-    modifier onlyInspector() {
-        require(inspectors[msg.sender], "Only inspectors can call this function");
-        _;
-    }
-
-    modifier onlySupplier() {
-        require(suppliers[msg.sender], "Only suppliers can call this function");
-        _;
-    }
-
-    modifier onlyTransporter() {
-        require(transporters[msg.sender], "Only transporters can call this function");
+        require(admin == msg.sender, "Only admin can call this function");
         _;
     }
 
@@ -80,4 +60,6 @@ contract Admin {
     function updateAdmin(address _newAdmin) external onlyAdmin {
         admin = _newAdmin;
     }
+
+    
 }

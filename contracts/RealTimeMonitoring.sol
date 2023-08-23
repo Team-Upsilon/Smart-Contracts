@@ -2,12 +2,14 @@
 pragma solidity ^0.8.0;
 
 import "./Manufacturer.sol";
+import "./Admin.sol";
 
 contract RealTimeMonitoring {
     Manufacturer private manufacturerContract;
-
+    Admin private adminContract;
     constructor(address _manufacturerAddress) {
         manufacturerContract = Manufacturer(_manufacturerAddress);
+        adminContract = Admin(msg.sender);
     }
 
     struct batchReport {
@@ -16,6 +18,16 @@ contract RealTimeMonitoring {
         uint256 batchReportResult;
     }
 
+    modifier onlyAdminOronlyInspector() {
+        require(
+            adminContract.admin() == msg.sender ||
+                adminContract.inspectors(msg.sender),
+            "Only admin or inspector can call this function"
+        );
+        _;
+    }
+
+    
     //batchId to struct
     mapping(uint256 => batchReport[]) public batchReports;
 
@@ -29,7 +41,7 @@ contract RealTimeMonitoring {
         uint256 _batchId,
         uint256 stage,
         uint256[] memory stagecondition
-    ) public {
+    ) public onlyAdminOronlyInspector  {
         uint256 batchId = manufacturerContract.getBatchId(_batchId);
         require(batchId != 0, "Batch not found");
         require(stage >= 1 && stage <= 3, "Invalid stage");

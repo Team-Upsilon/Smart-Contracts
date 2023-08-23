@@ -2,13 +2,33 @@
 pragma solidity ^0.8.0;
 
 import "./Inventory.sol";
-
+import "./Admin.sol";
 contract Supplier {
     Inventory private inventoryContract;
+    Admin private adminContract;
 
     constructor(address _inventoryAddress) {
         inventoryContract = Inventory(_inventoryAddress);
+        adminContract = Admin(msg.sender);
     }
+
+    modifier onlyAdminorOnlySupplier() {
+        require(
+            adminContract.admin() == msg.sender ||
+                adminContract.suppliers(msg.sender),
+            "Only admin or supplier can call this function"
+        );
+        _;
+    }
+
+    modifier onlySupplier() {
+        require(
+            adminContract.suppliers(msg.sender),
+            "Only supplier can call this function"
+        );
+        _;
+    }
+
 
     enum Stages {
         Created,
@@ -47,7 +67,7 @@ contract Supplier {
         address _manufacturerId,
         address _transporterId,
         address _inspectorId
-    ) external {
+    ) external onlyAdminorOnlySupplier {
         packageCount++;
         rawMaterialPackages[packageCount] = RawMaterialPackage(
             packageCount,
@@ -73,7 +93,7 @@ contract Supplier {
     function updatePackageStage(
         uint256 _packageId,
         uint256 _newStage
-    ) external {
+    ) external onlyAdminorOnlySupplier  {
         RawMaterialPackage storage package = rawMaterialPackages[_packageId];
         require(package.packageId != 0, "Package not found");
 
@@ -97,7 +117,7 @@ contract Supplier {
 
     function getRawMaterialPackage(
         uint256 _packageId
-    ) public view returns (RawMaterialPackage memory) {
+    ) public view onlySupplier returns (RawMaterialPackage memory)  {
         return rawMaterialPackages[_packageId];
     }
 }

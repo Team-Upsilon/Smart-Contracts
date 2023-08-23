@@ -2,12 +2,33 @@
 pragma solidity ^0.8.0;
 
 import "./BatchScheduler.sol";
+import "./Admin.sol";
 
 contract Manufacturer {
     BatchScheduler private batchSchedulerContract;
+    Admin private adminContract;
 
     constructor(address _batchSchedulerAddress) {
         batchSchedulerContract = BatchScheduler(_batchSchedulerAddress);
+        adminContract = Admin(msg.sender);
+    }
+
+
+    modifier onlyManufacturer() {
+        require(
+            adminContract.manufacturers(msg.sender),
+            "Only manufacturer can call this function"
+        );
+        _;
+    }
+
+    modifier onlyManufacturerOrAdmin() {
+        require(
+            adminContract.manufacturers(msg.sender) ||
+                adminContract.admin() == msg.sender,
+            "Only manufacturer or admin can call this function"
+        );
+        _;
     }
 
     struct Medicine {
@@ -85,7 +106,7 @@ contract Manufacturer {
         address _inspectorId,
         address _transporterId,
         address _wholesalerId
-    ) external {
+    ) external  onlyManufacturerOrAdmin{
         require(
             _medicineIds.length == _medicineQuantities.length,
             "Invalid input lengths"
@@ -151,7 +172,7 @@ contract Manufacturer {
         string memory _name,
         string memory _description,
         string memory _ipfs_hash
-    ) external {
+    ) external  onlyManufacturerOrAdmin{
         medicineCount++;
         medicines[medicineCount] = Medicine(
             medicineCount,
@@ -164,7 +185,7 @@ contract Manufacturer {
         emit MedicineCreated(medicineCount, _name, _description, _ipfs_hash);
     }
 
-    function updateBatchStage(uint256 _batchId, uint256 _newStage) external {
+    function updateBatchStage(uint256 _batchId, uint256 _newStage) external  onlyManufacturerOrAdmin{
         Batch storage batch = batches[_batchId];
         require(batch.batchId != 0, "Batch not found");
         if (_newStage == 1) {
@@ -194,18 +215,18 @@ contract Manufacturer {
         }
     }
 
-    function getBatchId(uint256 _batchId) public view returns (uint256) {
+    function getBatchId(uint256 _batchId) public view onlyManufacturer returns (uint256) {
         return batches[_batchId].batchId;
     }
 
-     function getBatches(uint256 _batchId) public view returns (Batch memory) {
+     function getBatches(uint256 _batchId) public view onlyManufacturer returns (Batch memory) {
         return batches[_batchId];
     }
 
     function getIdealStageCondition(
         uint256 _batchId,
         uint256 _stage
-    ) public view returns (uint256[] memory) {
+    ) public view onlyManufacturer returns (uint256[] memory) {
         Batch storage batch = batches[_batchId];
         require(batch.batchId != 0, "Batch not found");
         if (_stage == 1) {
@@ -220,7 +241,7 @@ contract Manufacturer {
     function updateInspectionStage(
         uint256 _batchId,
         uint256 _newStage
-    ) external {
+    ) external onlyManufacturerOrAdmin {
         Batch storage batch = batches[_batchId];
         require(batch.batchId != 0, "Batch not found");
 

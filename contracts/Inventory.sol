@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-
+import "./Admin.sol";
 contract Inventory {
+    Admin private adminContract;
     struct RawMaterial {
         uint256 materialId;
         string name;
@@ -10,8 +11,30 @@ contract Inventory {
         uint256 quantity;
     }
 
+    constructor(address _adminAddress) {
+        adminContract = Admin(_adminAddress);
+    }
+
     uint256 public materialCount;
     mapping(uint256 => RawMaterial) public rawMaterials;
+
+    modifier onlyAdminOronlySupplier() {
+        require(
+            adminContract.admin() == msg.sender ||
+                adminContract.suppliers(msg.sender),
+            "Only admin or supplier can call this function"
+        );
+        _;
+    }
+
+    modifier onlySupplier() {
+        require(
+            adminContract.suppliers(msg.sender),
+            "Only supplier can call this function"
+        );
+        _;
+    }
+
 
     event RawMaterialAdded(
         uint256 materialId,
@@ -35,7 +58,7 @@ contract Inventory {
         string memory _description,
         string memory _ipfs_hash,
         uint256 _quantity
-    ) external {
+    ) external onlyAdminOronlySupplier{
         materialCount++;
         rawMaterials[materialCount] = RawMaterial(
             materialCount,
@@ -56,7 +79,7 @@ contract Inventory {
     function checkAvailability(
         uint256 _materialId,
         uint256 _desiredQuantity
-    ) external view returns (uint256) {
+    ) external view onlySupplier returns (uint256)  {
         RawMaterial storage material = rawMaterials[_materialId];
         require(material.materialId != 0, "Material not found");
 
@@ -70,7 +93,7 @@ contract Inventory {
     function increaseQuantity(
         uint256 _materialId,
         uint256 _additionalQuantity
-    ) external {
+    ) external onlyAdminOronlySupplier{
         RawMaterial storage material = rawMaterials[_materialId];
         require(material.materialId != 0, "Material not found");
 
@@ -84,7 +107,7 @@ contract Inventory {
         string memory _newDescription,
         string memory _newIpfsHash,
         uint256 _newQuantity
-    ) external {
+    ) external onlyAdminOronlySupplier{
         RawMaterial storage material = rawMaterials[_materialId];
         require(material.materialId != 0, "Material not found");
 

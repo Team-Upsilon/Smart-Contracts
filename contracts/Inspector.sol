@@ -2,15 +2,29 @@
 pragma solidity ^0.8.0;
 
 import "./Supplier.sol";
+import "./Admin.sol";
 
 contract Inspector {
     Supplier private supplierContract;
+    Admin private adminContract;
 
     constructor(address _supplierAddress) {
         supplierContract = Supplier(_supplierAddress);
+        adminContract = Admin(msg.sender);
     }
 
     event packagegrade(uint256 packageid, uint256 grade);
+
+    modifier onlyAdminorOnlyInspector() {
+        require(
+            adminContract.admin() == msg.sender ||
+                adminContract.inspectors(msg.sender),
+            "Only admin or inspector can call this function"
+        );
+        _;
+    }
+
+ 
 
     struct packageReport {
         uint256 packageid;
@@ -29,7 +43,7 @@ contract Inspector {
         string memory _description,
         uint256[] memory _quantity,
         uint256[] memory concentration
-    ) public {
+    ) public onlyAdminorOnlyInspector{
         require(_quantity.length == concentration.length, "Invalid input");
         uint256 grade = 0;
         uint256 totalquantity = 0;
