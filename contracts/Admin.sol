@@ -77,16 +77,6 @@ contract Admin {
         transporters[_account] = false;
     }
 
-    function addStageInspector(address _account) external onlyAdmin {
-        require(!stageInspectors[_account], "Stage Inspector already exists");
-        stageInspectors[_account] = true;
-    }
-
-    function removeStageInspector(address _account) external onlyAdmin {
-        require(stageInspectors[_account], "Stage Inspector does not exist");
-        stageInspectors[_account] = false;
-    }
-
     function updateAdmin(address _newAdmin) external onlyAdmin {
         admin = _newAdmin;
     }
