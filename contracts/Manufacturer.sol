@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./BatchScheduler.sol";
 import "./Admin.sol";
-
+ 
 contract Manufacturer {
     BatchScheduler private batchSchedulerContract;
     Admin private adminContract;
