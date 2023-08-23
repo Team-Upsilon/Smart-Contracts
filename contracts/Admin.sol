@@ -1,17 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./Roles.sol";
-
 contract Admin {
-    using Roles for Roles.Role;
-
     address public admin;
-    Roles.Role public manufacturers;
-    Roles.Role public inspectors;
-    Roles.Role public suppliers; 
-    Roles.Role public transporters;
-    Roles.Role public stageInspectors;
+    mapping(address => bool) public manufacturers;
+    mapping(address => bool) public inspectors;
+    mapping(address => bool) public suppliers;
+    mapping(address => bool) public transporters;
+    mapping(address => bool) public stageInspectors;
 
     constructor() {
         admin = msg.sender;
@@ -23,68 +19,78 @@ contract Admin {
     }
 
     modifier onlyManufacturer() {
-        require(manufacturers.has(msg.sender), "Only manufacturers can call this function");
+        require(manufacturers[msg.sender], "Only manufacturers can call this function");
         _;
     }
 
     modifier onlyInspector() {
-        require(inspectors.has(msg.sender), "Only inspectors can call this function");
+        require(inspectors[msg.sender], "Only inspectors can call this function");
         _;
     }
 
     modifier onlySupplier() {
-        require(suppliers.has(msg.sender), "Only suppliers can call this function");
+        require(suppliers[msg.sender], "Only suppliers can call this function");
         _;
     }
 
     modifier onlyTransporter() {
-        require(transporters.has(msg.sender), "Only transporters can call this function");
+        require(transporters[msg.sender], "Only transporters can call this function");
         _;
     }
 
     modifier onlyStageInspector() {
-        require(stageInspectors.has(msg.sender), "Only stage inspectors can call this function");
+        require(stageInspectors[msg.sender], "Only stage inspectors can call this function");
         _;
     }
 
     function addManufacturer(address _account) external onlyAdmin {
-        manufacturers.add(_account);
+        require(!manufacturers[_account], "Manufacturer already exists");
+        manufacturers[_account] = true;
     }
 
     function removeManufacturer(address _account) external onlyAdmin {
-        manufacturers.remove(_account);
+        require(manufacturers[_account], "Manufacturer does not exist");
+        manufacturers[_account] = false;
     }
 
     function addInspector(address _account) external onlyAdmin {
-        inspectors.add(_account);
+        require(!inspectors[_account], "Inspector already exists");
+        inspectors[_account] = true;
     }
 
     function removeInspector(address _account) external onlyAdmin {
-        inspectors.remove(_account);
+        require(inspectors[_account], "Inspector does not exist");
+        inspectors[_account] = false;
     }
 
     function addSupplier(address _account) external onlyAdmin {
-        suppliers.add(_account);
+        require(!suppliers[_account], "Supplier already exists");
+        suppliers[_account] = true;
     }
 
     function removeSupplier(address _account) external onlyAdmin {
-        suppliers.remove(_account);
+        require(suppliers[_account], "Supplier does not exist");
+        suppliers[_account] = false;
     }
 
     function addTransporter(address _account) external onlyAdmin {
-        transporters.add(_account);
+        require(!transporters[_account], "Transporter already exists");
+        transporters[_account] = true;
     }
 
     function removeTransporter(address _account) external onlyAdmin {
-        transporters.remove(_account);
+        require(transporters[_account], "Transporter does not exist");
+        transporters[_account] = false;
     }
 
     function addStageInspector(address _account) external onlyAdmin {
-        stageInspectors.add(_account);
+        require(!stageInspectors[_account], "Stage Inspector already exists");
+        stageInspectors[_account] = true;
     }
 
     function removeStageInspector(address _account) external onlyAdmin {
-        stageInspectors.remove(_account);
+        require(stageInspectors[_account], "Stage Inspector does not exist");
+        stageInspectors[_account] = false;
     }
 
     function updateAdmin(address _newAdmin) external onlyAdmin {
