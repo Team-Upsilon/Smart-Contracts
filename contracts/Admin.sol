@@ -7,7 +7,6 @@ contract Admin {
     mapping(address => bool) public inspectors;
     mapping(address => bool) public suppliers;
     mapping(address => bool) public transporters;
-    mapping(address => bool) public stageInspectors;
 
     constructor() {
         admin = msg.sender;
@@ -35,11 +34,6 @@ contract Admin {
 
     modifier onlyTransporter() {
         require(transporters[msg.sender], "Only transporters can call this function");
-        _;
-    }
-
-    modifier onlyStageInspector() {
-        require(stageInspectors[msg.sender], "Only stage inspectors can call this function");
         _;
     }
 
