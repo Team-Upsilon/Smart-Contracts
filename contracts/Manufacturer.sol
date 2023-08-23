@@ -236,6 +236,7 @@ contract Manufacturer {
         } else if (_stage == 3) {
             return batch.idealpackagingconditions;
         }
+        revert("Invalid stage");
     }
 
     function updateInspectionStage(
