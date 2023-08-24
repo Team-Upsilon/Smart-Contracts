@@ -8,9 +8,9 @@ contract Inspector {
     Supplier private supplierContract;
     Admin private adminContract;
 
-    constructor(address _supplierAddress) {
+    constructor(address _supplierAddress, address _adminAddress) {
         supplierContract = Supplier(_supplierAddress);
-        adminContract = Admin(msg.sender);
+        adminContract = Admin(_adminAddress);
     }
 
     event packagegrade(uint256 packageid, uint256 grade);
