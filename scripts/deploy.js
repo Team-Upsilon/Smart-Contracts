@@ -4,28 +4,28 @@ const hre = require("hardhat");
 async function main() {
 
   const Admin = await ethers.deployContract("Admin");
-  console.log("Admin: ", await Admin.target);
+  console.log("Admin: ", Admin.target);
 
   const Inventory = await ethers.deployContract("Inventory", [Admin.target]);
-  console.log("Inventory: ", await Inventory.target);
+  console.log("Inventory: ", Inventory.target);
 
   const Supplier = await ethers.deployContract("Supplier", [Inventory.target, Admin.target]);
-  console.log("Supplier: ", await Supplier.target);
+  console.log("Supplier: ", Supplier.target);
 
   const BatchScheduler = await ethers.deployContract("BatchScheduler");
-  console.log("BatchScheduler: ", await BatchScheduler.target);
+  console.log("BatchScheduler: ", BatchScheduler.target);
 
   const Manufacturer = await ethers.deployContract("Manufacturer", [BatchScheduler.target, Admin.target]);
-  console.log("Manufacturer: ", await Manufacturer.target);
+  console.log("Manufacturer: ", Manufacturer.target);
 
   const Inspector = await ethers.deployContract("Inspector", [Supplier.target, Admin.target]);
-  console.log("Inspector: ", await Inspector.target);
+  console.log("Inspector: ", Inspector.target);
 
   const Transporter = await ethers.deployContract("Transporter", [Supplier.target, Manufacturer.target, Admin.target]);
-  console.log("Transporter: ", await Transporter.target);
+  console.log("Transporter: ", Transporter.target);
 
   const RealTimeMonitoring = await ethers.deployContract("RealTimeMonitoring", [Manufacturer.target, Admin.target]);
-  console.log("RealTimeMonitoring: ", await RealTimeMonitoring.target);
+  console.log("RealTimeMonitoring: ", RealTimeMonitoring.target);
 
 }
 

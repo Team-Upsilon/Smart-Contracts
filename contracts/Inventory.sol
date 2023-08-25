@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "./Admin.sol";
+
 contract Inventory {
     Admin private adminContract;
     struct RawMaterial {
         uint256 materialId;
         string name;
-        string description;  // New field: description
-        string ipfs_hash;    // New field: IPFS hash
+        string description; 
+        string ipfs_hash; 
         uint256 quantity;
     }
 
@@ -35,7 +36,6 @@ contract Inventory {
         _;
     }
 
-
     event RawMaterialAdded(
         uint256 materialId,
         string name,
@@ -58,7 +58,7 @@ contract Inventory {
         string memory _description,
         string memory _ipfs_hash,
         uint256 _quantity
-    ) external onlyAdminOronlySupplier{
+    ) external onlyAdminOronlySupplier {
         materialCount++;
         rawMaterials[materialCount] = RawMaterial(
             materialCount,
@@ -79,7 +79,7 @@ contract Inventory {
     function checkAvailability(
         uint256 _materialId,
         uint256 _desiredQuantity
-    ) external view onlySupplier returns (uint256)  {
+    ) external view onlySupplier returns (uint256) {
         RawMaterial storage material = rawMaterials[_materialId];
         require(material.materialId != 0, "Material not found");
 
@@ -93,12 +93,26 @@ contract Inventory {
     function increaseQuantity(
         uint256 _materialId,
         uint256 _additionalQuantity
-    ) external onlyAdminOronlySupplier{
+    ) external onlyAdminOronlySupplier {
         RawMaterial storage material = rawMaterials[_materialId];
         require(material.materialId != 0, "Material not found");
 
         material.quantity += _additionalQuantity;
         emit QuantityIncreased(_materialId, material.quantity);
+    }
+
+    function decreaseQuantity(
+        uint256 _materialId,
+        uint256 _quantityToDeduct
+    ) external {
+        RawMaterial storage material = rawMaterials[_materialId];
+        require(material.materialId != 0, "Material not found");
+        require(
+            material.quantity >= _quantityToDeduct,
+            "Insufficient quantity"
+        );
+
+        material.quantity -= _quantityToDeduct;
     }
 
     function updateRawMaterial(
@@ -107,7 +121,7 @@ contract Inventory {
         string memory _newDescription,
         string memory _newIpfsHash,
         uint256 _newQuantity
-    ) external onlyAdminOronlySupplier{
+    ) external onlyAdminOronlySupplier {
         RawMaterial storage material = rawMaterials[_materialId];
         require(material.materialId != 0, "Material not found");
 

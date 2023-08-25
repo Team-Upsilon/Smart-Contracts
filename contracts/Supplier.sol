@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./Inventory.sol";
 import "./Admin.sol";
+
 contract Supplier {
     Inventory private inventoryContract;
     Admin private adminContract;
@@ -38,7 +39,6 @@ contract Supplier {
         _;
     }
 
-
     enum Stages {
         Requested,
         Created,
@@ -48,8 +48,9 @@ contract Supplier {
 
     struct RawMaterialPackage {
         uint256 packageId;
+        uint256[] rawMaterialsIds;
+        uint256[] rawMaterialsQuantities;
         string description;
-        string ipfs_hash; 
         address manufacturerId;
         address transporterId;
         address supplierId;
@@ -63,7 +64,6 @@ contract Supplier {
     event RawMaterialPackageRequested(
         uint256 packageId,
         string description,
-        string ipfs_hash,
         address manufacturerId,
         address transporterId,
         address supplierId,
@@ -73,18 +73,44 @@ contract Supplier {
     event RawMaterialPackageStageUpdated(uint256 packageId, uint256 newStage);
 
     function requestRawMaterialPackage(
+        uint256[] memory _rawMaterialsIds,
+        uint256[] memory _rawMaterialsQuantities,
         string memory _description,
-        string memory _ipfs_hash,
         address _manufacturerId,
         address _transporterId,
         address _supplierId,
         address _inspectorId
     ) external onlyManufacturerOrAdmin {
+        require(
+            _rawMaterialsIds.length == _rawMaterialsQuantities.length,
+            "Invalid input lengths"
+        );
+
+        // Check if the requested raw material quantities are available
+        for (uint256 i = 0; i < _rawMaterialsIds.length; i++) {
+            uint256 materialId = _rawMaterialsIds[i];
+            uint256 desiredQuantity = _rawMaterialsQuantities[i];
+
+            require(
+                inventoryContract.checkAvailability(
+                    materialId,
+                    desiredQuantity
+                ) == desiredQuantity,
+                "Insufficient raw material quantity"
+            );
+
+            // Deduct the raw material quantity from the inventory
+            inventoryContract.decreaseQuantity(materialId, desiredQuantity);
+        }
+
         packageCount++;
-        rawMaterialPackages[packageCount] = RawMaterialPackage(
-            packageCount,
+        uint256 currentPackageId = packageCount;
+
+        rawMaterialPackages[currentPackageId] = RawMaterialPackage(
+            currentPackageId,
+            _rawMaterialsIds,
+            _rawMaterialsQuantities,
             _description,
-            _ipfs_hash,
             _manufacturerId,
             _transporterId,
             _supplierId,
@@ -93,9 +119,8 @@ contract Supplier {
         );
 
         emit RawMaterialPackageRequested(
-            packageCount,
+            currentPackageId,
             _description,
-            _ipfs_hash,
             _manufacturerId,
             _transporterId,
             _supplierId,
@@ -103,10 +128,11 @@ contract Supplier {
         );
     }
 
-    function updatePackageStage(  // this will be used to create a new package
+    function updatePackageStage(
+        // this will be used to create a new package
         uint256 _packageId,
         uint256 _newStage
-    ) external onlyAdminorOnlySupplier  {
+    ) external onlyAdminorOnlySupplier {
         RawMaterialPackage storage package = rawMaterialPackages[_packageId];
         require(package.packageId != 0, "Package not found");
 
@@ -117,8 +143,7 @@ contract Supplier {
                 "Invalid stage transition"
             );
             package.stage = Stages.Created;
-        }
-        else if (_newStage == 2) {
+        } else if (_newStage == 2) {
             require(
                 package.stage == Stages.Created,
                 "Invalid stage transition"
@@ -137,7 +162,7 @@ contract Supplier {
 
     function getRawMaterialPackage(
         uint256 _packageId
-    ) public view onlySupplier returns (RawMaterialPackage memory)  {
+    ) public view onlySupplier returns (RawMaterialPackage memory) {
         return rawMaterialPackages[_packageId];
     }
 }
