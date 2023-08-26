@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 contract Admin {
     address public admin;
+
+    // mappings to store the addresses of the different roles
     mapping(address => bool) public manufacturers;
     mapping(address => bool) public inspectors;
     mapping(address => bool) public suppliers;
@@ -14,7 +16,7 @@ contract Admin {
     }
 
     modifier onlyAdmin() {
-        require(admin == msg.sender, "Only admin can call this function");
+        require(admin == msg.sender, "Only admin can call the function ");
         _;
     }
 

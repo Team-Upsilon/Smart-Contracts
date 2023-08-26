@@ -13,15 +13,6 @@ contract Manufacturer {
         adminContract = Admin(_adminAddress);
     }
 
-
-    modifier onlyManufacturer() {
-        require(
-            adminContract.manufacturers(msg.sender),
-            "Only manufacturer can call this function"
-        );
-        _;
-    }
-
     modifier onlyManufacturerOrAdmin() {
         require(
             adminContract.manufacturers(msg.sender) ||
@@ -185,7 +176,7 @@ contract Manufacturer {
         emit MedicineCreated(medicineCount, _name, _description, _ipfs_hash);
     }
 
-    function updateBatchStage(uint256 _batchId, uint256 _newStage) external  onlyManufacturerOrAdmin{
+    function updateBatchStage(uint256 _batchId, uint256 _newStage) external {
         Batch storage batch = batches[_batchId];
         require(batch.batchId != 0, "Batch not found");
         if (_newStage == 1) {
@@ -215,18 +206,18 @@ contract Manufacturer {
         }
     }
 
-    function getBatchId(uint256 _batchId) public view onlyManufacturer returns (uint256) {
+    function getBatchId(uint256 _batchId) public view returns (uint256) {
         return batches[_batchId].batchId;
     }
 
-     function getBatches(uint256 _batchId) public view onlyManufacturer returns (Batch memory) {
+     function getBatches(uint256 _batchId) public view returns (Batch memory) {
         return batches[_batchId];
     }
 
     function getIdealStageCondition(
         uint256 _batchId,
         uint256 _stage
-    ) public view onlyManufacturer returns (uint256[] memory) {
+    ) public view returns (uint256[] memory) {
         Batch storage batch = batches[_batchId];
         require(batch.batchId != 0, "Batch not found");
         if (_stage == 1) {
@@ -242,7 +233,7 @@ contract Manufacturer {
     function updateInspectionStage(
         uint256 _batchId,
         uint256 _newStage
-    ) external onlyManufacturerOrAdmin {
+    ) external {
         Batch storage batch = batches[_batchId];
         require(batch.batchId != 0, "Batch not found");
 

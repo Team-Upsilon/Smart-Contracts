@@ -24,15 +24,6 @@ contract Transporter {
         _;
     }
 
-    modifier onlyTransporter(){
-        require(
-            adminContract.transporters(msg.sender),
-            "Only Transporter can call this function"
-        );
-        _;
-    }
-    
-
     struct PackageDelivery {
         uint256 packageId;
         address supplierId;

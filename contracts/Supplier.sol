@@ -13,28 +13,11 @@ contract Supplier {
         adminContract = Admin(_adminAddress);
     }
 
-    modifier onlyAdminorOnlySupplier() {
-        require(
-            adminContract.admin() == msg.sender ||
-                adminContract.suppliers(msg.sender),
-            "Only admin or supplier can call this function"
-        );
-        _;
-    }
-
     modifier onlyManufacturerOrAdmin() {
         require(
             adminContract.manufacturers(msg.sender) ||
                 adminContract.admin() == msg.sender,
             "Only manufacturer or admin can call this function"
-        );
-        _;
-    }
-
-    modifier onlySupplier() {
-        require(
-            adminContract.suppliers(msg.sender),
-            "Only supplier can call this function"
         );
         _;
     }
@@ -132,7 +115,7 @@ contract Supplier {
         // this will be used to create a new package
         uint256 _packageId,
         uint256 _newStage
-    ) external onlyAdminorOnlySupplier {
+    ) external {
         RawMaterialPackage storage package = rawMaterialPackages[_packageId];
         require(package.packageId != 0, "Package not found");
 
@@ -162,7 +145,7 @@ contract Supplier {
 
     function getRawMaterialPackage(
         uint256 _packageId
-    ) public view onlySupplier returns (RawMaterialPackage memory) {
+    ) public view returns (RawMaterialPackage memory) {
         return rawMaterialPackages[_packageId];
     }
 }

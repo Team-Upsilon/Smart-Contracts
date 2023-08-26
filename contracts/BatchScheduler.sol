@@ -27,9 +27,9 @@ contract BatchScheduler {
         uint256 maxTotalScore = 60 + 40; // 100%
 
         // Score to a percentage value
-        uint256 scorePercentage = (totalWeightedScore * 100) / maxTotalScore;
+        uint256 scoreInPercentage = (totalWeightedScore * 100) / maxTotalScore;
 
-        return scorePercentage;
+        return scoreInPercentage;
     }
 
     // function normalizeCost(uint256 cost) internal pure returns (uint256) {

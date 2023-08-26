@@ -44,7 +44,7 @@ contract Inspector {
         uint256[] memory _quantity,
         uint256[] memory concentration
     ) public onlyAdminorOnlyInspector{
-        require(_quantity.length == concentration.length, "Invalid input");
+        require(_quantity.length == concentration.length, "Invalid input length ");
         uint256 grade = 0;
         uint256 totalquantity = 0;
         for (uint256 i = 0; i < _quantity.length; i++) {

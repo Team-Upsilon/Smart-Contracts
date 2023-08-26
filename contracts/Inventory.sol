@@ -28,14 +28,6 @@ contract Inventory {
         _;
     }
 
-    modifier onlySupplier() {
-        require(
-            adminContract.suppliers(msg.sender),
-            "Only supplier can call this function"
-        );
-        _;
-    }
-
     event RawMaterialAdded(
         uint256 materialId,
         string name,
@@ -79,7 +71,7 @@ contract Inventory {
     function checkAvailability(
         uint256 _materialId,
         uint256 _desiredQuantity
-    ) external view onlySupplier returns (uint256) {
+    ) external view returns (uint256) {
         RawMaterial storage material = rawMaterials[_materialId];
         require(material.materialId != 0, "Material not found");
 
@@ -93,7 +85,7 @@ contract Inventory {
     function increaseQuantity(
         uint256 _materialId,
         uint256 _additionalQuantity
-    ) external onlyAdminOronlySupplier {
+    ) external {
         RawMaterial storage material = rawMaterials[_materialId];
         require(material.materialId != 0, "Material not found");
 

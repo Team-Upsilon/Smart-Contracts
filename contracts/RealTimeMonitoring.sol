@@ -43,7 +43,7 @@ contract RealTimeMonitoring {
         uint256[] memory stagecondition
     ) public onlyAdminOronlyInspector  {
         uint256 batchId = manufacturerContract.getBatchId(_batchId);
-        require(batchId != 0, "Batch not found");
+        require(batchId != 0, "Batch was not found");
         require(stage >= 1 && stage <= 3, "Invalid stage");
         require(
             stagecondition.length > 0,
