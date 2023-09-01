@@ -3,25 +3,14 @@ pragma solidity ^0.8.0;
 
 import "./Supplier.sol";
 import "./Manufacturer.sol";
-import "./Admin.sol";
 
 contract Transporter {
     Supplier private supplierContract;
     Manufacturer private manufacturerContract;
-    Admin private adminContract;
 
-    constructor(address _supplierAddress, address _manufacturerAddress, address _adminAddress) {
+    constructor(address _supplierAddress, address _manufacturerAddress) {
         supplierContract = Supplier(_supplierAddress);
         manufacturerContract = Manufacturer(_manufacturerAddress);
-        adminContract = Admin(_adminAddress);
-    }
-
-    modifier onlyAdminorOnlyTransporter() {
-        require(
-            adminContract.admin() == msg.sender ||
-                adminContract.transporters(msg.sender),
-            "Only admin or transporter can call this function");
-        _;
     }
 
     struct PackageDelivery {
@@ -33,13 +22,6 @@ contract Transporter {
 
     mapping(uint256 => PackageDelivery) public packageDeliveries;
 
-    event PackageDeliveryRecorded(
-        uint256 packageId,
-        address supplierId,
-        address transporterId,
-        uint256 deliveryTimestamp
-    );
-
     struct BatchDelivery {
         uint256 batchId;
         address manufacturerId;
@@ -49,14 +31,7 @@ contract Transporter {
 
     mapping(uint256 => BatchDelivery) public batchDeliveries;
 
-    event BatchDeliveryRecorded(
-        uint256 batchId,
-        address manufacturerId,
-        address transporterId,
-        uint256 deliveryTimestamp
-    );
-
-    function recordPackageDelivery(uint256 _packageId) external onlyAdminorOnlyTransporter   {
+    function recordPackageDelivery(uint256 _packageId) external   {
         Supplier.RawMaterialPackage memory package = supplierContract
             .getRawMaterialPackage(_packageId);
         require(package.packageId != 0, "Package not found");
@@ -74,16 +49,9 @@ contract Transporter {
         );
 
         supplierContract.updatePackageStage(_packageId, 2);
-
-        emit PackageDeliveryRecorded(
-            _packageId,
-            package.supplierId,
-            msg.sender,
-            block.timestamp
-        );
     }
 
-    function recordBatchDelivery(uint256 _batchId) external onlyAdminorOnlyTransporter {
+    function recordBatchDelivery(uint256 _batchId) external {
         Manufacturer.Batch memory batch = manufacturerContract.getBatches(
             _batchId
         );
@@ -102,12 +70,5 @@ contract Transporter {
         );
 
         manufacturerContract.updateBatchStage(_batchId, 4);
-
-        emit BatchDeliveryRecorded(
-            _batchId,
-            batch.manufacturerId,
-            msg.sender,
-            block.timestamp
-        );
     }
 }

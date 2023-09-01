@@ -2,24 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "./BatchScheduler.sol";
-import "./Admin.sol";
  
 contract Manufacturer {
     BatchScheduler private batchSchedulerContract;
-    Admin private adminContract;
 
-    constructor(address _batchSchedulerAddress, address _adminAddress) {
+    constructor(address _batchSchedulerAddress) {
         batchSchedulerContract = BatchScheduler(_batchSchedulerAddress);
-        adminContract = Admin(_adminAddress);
-    }
-
-    modifier onlyManufacturerOrAdmin() {
-        require(
-            adminContract.manufacturers(msg.sender) ||
-                adminContract.admin() == msg.sender,
-            "Only manufacturer or admin can call this function"
-        );
-        _;
     }
 
     struct Medicine {
@@ -68,24 +56,6 @@ contract Manufacturer {
     uint256 public medicineCount;
     mapping(uint256 => Medicine) public medicines;
 
-    event BatchCreated(
-        uint256 batchId,
-        uint256[] medicineIds,
-        uint256[] medicineQuantities,
-        address manufacturerId,
-        uint256 manufacturingDate,
-        Stages stage
-    );
-
-    event MedicineCreated(
-        uint256 medicineId,
-        string name,
-        string description,
-        string ipfs_hash
-    );
-
-    event BatchStageUpdated(uint256 batchId, Stages newStage);
-
     function createBatch(
         uint256[] memory _medicineIds,
         uint256[] memory _medicineQuantities,
@@ -97,7 +67,7 @@ contract Manufacturer {
         address _inspectorId,
         address _transporterId,
         address _wholesalerId
-    ) external  onlyManufacturerOrAdmin{
+    ) external {
         require(
             _medicineIds.length == _medicineQuantities.length,
             "Invalid input lengths"
@@ -148,22 +118,13 @@ contract Manufacturer {
             _inspectorId,
             InspectionStages.STAGE_0
         );
-
-        emit BatchCreated(
-            currentBatchId,
-            actualMedicineIds,
-            actualQuantities,
-            msg.sender,
-            block.timestamp,
-            Stages.preProduction
-        );
     }
 
     function createMedicine(
         string memory _name,
         string memory _description,
         string memory _ipfs_hash
-    ) external  onlyManufacturerOrAdmin{
+    ) external {
         medicineCount++;
         medicines[medicineCount] = Medicine(
             medicineCount,
@@ -173,7 +134,6 @@ contract Manufacturer {
             _ipfs_hash
         );
 
-        emit MedicineCreated(medicineCount, _name, _description, _ipfs_hash);
     }
 
     function updateBatchStage(uint256 _batchId, uint256 _newStage) external {
@@ -186,23 +146,19 @@ contract Manufacturer {
             );
             batch.stage = Stages.Stage1;
 
-            emit BatchStageUpdated(_batchId, Stages.Stage1);
         } else if (_newStage == 2) {
             require(batch.stage == Stages.Stage1, "Invalid stage transition");
             batch.stage = Stages.Stage2;
 
-            emit BatchStageUpdated(_batchId, Stages.Stage2);
         } else if (_newStage == 3) {
             require(batch.stage == Stages.Stage2, "Invalid stage transition");
             batch.stage = Stages.Packaging;
 
-            emit BatchStageUpdated(_batchId, Stages.Packaging);
         }
         else if (_newStage == 4) {
             require(batch.stage == Stages.Packaging, "Invalid stage transition");
             batch.stage = Stages.Delivered;
 
-            emit BatchStageUpdated(_batchId, Stages.Delivered);
         }
     }
 
@@ -240,13 +196,13 @@ contract Manufacturer {
         require(_newStage >= 1 && _newStage <= 3, "Invalid stage");
 
         if (_newStage == 1) {
-            require(batch.stage == Stages.preProduction, "Invalid stage");
+            require(batch.stage == Stages.Stage1, "Invalid stage");
             batch.InspectionStage = InspectionStages.STAGE_1;
         } else if (_newStage == 2) {
-            require(batch.stage == Stages.Stage1, "Invalid stage");
+            require(batch.stage == Stages.Stage2, "Invalid stage");
             batch.InspectionStage = InspectionStages.STAGE_2;
         } else if (_newStage == 3) {
-            require(batch.stage == Stages.Stage2, "Invalid stage");
+            require(batch.stage == Stages.Packaging, "Invalid stage");
             batch.InspectionStage = InspectionStages.STAGE_3;
         }
     }

@@ -2,24 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "./Inventory.sol";
-import "./Admin.sol";
 
 contract Supplier {
     Inventory private inventoryContract;
-    Admin private adminContract;
 
-    constructor(address _inventoryAddress, address _adminAddress) {
+    constructor(address _inventoryAddress) {
         inventoryContract = Inventory(_inventoryAddress);
-        adminContract = Admin(_adminAddress);
-    }
-
-    modifier onlyManufacturerOrAdmin() {
-        require(
-            adminContract.manufacturers(msg.sender) ||
-                adminContract.admin() == msg.sender,
-            "Only manufacturer or admin can call this function"
-        );
-        _;
     }
 
     enum Stages {
@@ -44,17 +32,6 @@ contract Supplier {
     uint256 public packageCount;
     mapping(uint256 => RawMaterialPackage) public rawMaterialPackages;
 
-    event RawMaterialPackageRequested(
-        uint256 packageId,
-        string description,
-        address manufacturerId,
-        address transporterId,
-        address supplierId,
-        address inspectorId
-    );
-
-    event RawMaterialPackageStageUpdated(uint256 packageId, uint256 newStage);
-
     function requestRawMaterialPackage(
         uint256[] memory _rawMaterialsIds,
         uint256[] memory _rawMaterialsQuantities,
@@ -63,7 +40,7 @@ contract Supplier {
         address _transporterId,
         address _supplierId,
         address _inspectorId
-    ) external onlyManufacturerOrAdmin {
+    ) external {
         require(
             _rawMaterialsIds.length == _rawMaterialsQuantities.length,
             "Invalid input lengths"
@@ -100,15 +77,6 @@ contract Supplier {
             _inspectorId,
             Stages.Requested
         );
-
-        emit RawMaterialPackageRequested(
-            currentPackageId,
-            _description,
-            _manufacturerId,
-            _transporterId,
-            _supplierId,
-            _inspectorId
-        );
     }
 
     function updatePackageStage(
@@ -139,8 +107,6 @@ contract Supplier {
             );
             package.stage = Stages.Inspected;
         }
-
-        emit RawMaterialPackageStageUpdated(_packageId, _newStage);
     }
 
     function getRawMaterialPackage(

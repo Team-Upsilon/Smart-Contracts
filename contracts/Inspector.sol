@@ -6,24 +6,10 @@ import "./Admin.sol";
 
 contract Inspector {
     Supplier private supplierContract;
-    Admin private adminContract;
 
-    constructor(address _supplierAddress, address _adminAddress) {
+    constructor(address _supplierAddress) {
         supplierContract = Supplier(_supplierAddress);
-        adminContract = Admin(_adminAddress);
     }
-
-    event packagegrade(uint256 packageid, uint256 grade);
-
-    modifier onlyAdminorOnlyInspector() {
-        require(
-            adminContract.admin() == msg.sender ||
-                adminContract.inspectors(msg.sender),
-            "Only admin or inspector can call this function"
-        );
-        _;
-    }
-
  
 
     struct packageReport {
@@ -43,7 +29,7 @@ contract Inspector {
         string memory _description,
         uint256[] memory _quantity,
         uint256[] memory concentration
-    ) public onlyAdminorOnlyInspector{
+    ) public {
         require(_quantity.length == concentration.length, "Invalid input length ");
         uint256 grade = 0;
         uint256 totalquantity = 0;
@@ -54,10 +40,7 @@ contract Inspector {
             }
         }
         grade = grade / totalquantity;
-        emit packagegrade(_packageid, grade);
-
         
-
         //generate packageReport
         if (grade >= 7) {
             packageReports[_packageid].push(

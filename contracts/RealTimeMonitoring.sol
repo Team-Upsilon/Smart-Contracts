@@ -2,14 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "./Manufacturer.sol";
-import "./Admin.sol";
 
 contract RealTimeMonitoring {
     Manufacturer private manufacturerContract;
-    Admin private adminContract;
-    constructor(address _manufacturerAddress, address _adminAddress) {
+
+    constructor(address _manufacturerAddress) {
         manufacturerContract = Manufacturer(_manufacturerAddress);
-        adminContract = Admin(_adminAddress);
     }
 
     struct batchReport {
@@ -18,30 +16,15 @@ contract RealTimeMonitoring {
         uint256 batchReportResult;
     }
 
-    modifier onlyAdminOronlyInspector() {
-        require(
-            adminContract.admin() == msg.sender ||
-                adminContract.inspectors(msg.sender),
-            "Only admin or inspector can call this function"
-        );
-        _;
-    }
-
     
     //batchId to struct
     mapping(uint256 => batchReport[]) public batchReports;
-
-    event batchReportRecorded(
-        uint256 batchId,
-        uint256 stage,
-        uint256 batchReportResult
-    );
 
     function recordBatchReport(
         uint256 _batchId,
         uint256 stage,
         uint256[] memory stagecondition
-    ) public onlyAdminOronlyInspector  {
+    ) public {
         uint256 batchId = manufacturerContract.getBatchId(_batchId);
         require(batchId != 0, "Batch was not found");
         require(stage >= 1 && stage <= 3, "Invalid stage");
@@ -82,9 +65,6 @@ contract RealTimeMonitoring {
         // Store the batchReport result in the mapping
         batchReport memory newBatchReport  = batchReport(_batchId, stage, grading);
         batchReports[_batchId].push(newBatchReport );
-
-        // Emit the batchReportRecorded event
-        emit batchReportRecorded(_batchId, stage, grading);
 
         // Update batchReportStage in Manufacturer contract
         manufacturerContract.updateInspectionStage(

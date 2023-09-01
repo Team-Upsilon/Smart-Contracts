@@ -31,14 +31,4 @@ contract BatchScheduler {
 
         return scoreInPercentage;
     }
-
-    // function normalizeCost(uint256 cost) internal pure returns (uint256) {
-    //     // Apply normalization formula based on scaling factors or optimization parameters
-    //     return cost; // For demonstration, no normalization applied
-    // }
-
-    // function normalizeDays(uint256 days) internal pure returns (uint256) {
-    // // Apply normalization formula based on scaling factors or optimization parameters
-    // return days; // For demonstration, no normalization applied
-    // }
 }
